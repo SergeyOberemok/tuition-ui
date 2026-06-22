@@ -1,18 +1,25 @@
+import { defineConfig, globalIgnores } from 'eslint/config'
+import globals from 'globals'
 import js from '@eslint/js'
-import pluginVitest from '@vitest/eslint-plugin'
-import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
-import pluginPlaywright from 'eslint-plugin-playwright'
 import pluginVue from 'eslint-plugin-vue'
+import pluginVitest from '@vitest/eslint-plugin'
+import pluginOxlint from 'eslint-plugin-oxlint'
+import skipFormatting from 'eslint-config-prettier/flat'
 
-export default [
+export default defineConfig([
   {
     name: 'app/files-to-lint',
-    files: ['**/*.{js,mjs,jsx,vue}'],
+    files: ['**/*.{vue,js,mjs,jsx}'],
   },
 
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+
   {
-    name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
   },
 
   js.configs.recommended,
@@ -23,19 +30,7 @@ export default [
     files: ['src/**/__tests__/*'],
   },
 
-  {
-    ...pluginPlaywright.configs['flat/recommended'],
-    files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
-  },
-  skipFormatting,
+  ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
 
-  {
-    env: {
-      node: true,
-      browser: true,
-    },
-  },
-  {
-    rules: { 'vue/multi-word-component-names': 'off' },
-  },
-]
+  skipFormatting,
+])
